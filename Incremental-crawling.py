@@ -87,26 +87,33 @@ last_message_id=df['last_message_id']
 
 for name in idn:
     group_id=int(name)
-    channel_item = client.get_entity(group_id)  #获取channel这个entity的信息
-    messages = client.get_messages(group_id)
-    mid=last_message_id[idn.index(group_id)]
-    print('The last message id crawled last time: ',mid)
+    try:
+        channel_item = client.get_entity(group_id)  #获取channel这个entity的信息
+        messages = client.get_messages(group_id)
+        mid=last_message_id[idn.index(group_id)]
+        print('The last message id crawled last time: ',mid)
 
-    for message in messages:
-        if int(utils.get_message_id(message)) > mid:
-            speak=str(message.message).replace('\r', '').replace('\n', '').replace('\t', '')
-            sender=str(utils.get_display_name(message.sender))
-            #对字段长度进行截断，防止数据库报错
-            if len(speak)>500:
-                speak=speak[:500]
-            if len(sender)>80:
-                sender=sender[:80]
-            if len(speak)!=0 and speak!='None':
-                cursor.execute("INSERT INTO rawData VALUES(null,%s,%s,%s,%s);",
-                                (str(group_id), str(sender), str(str(message.date)[:19]),str(speak)))
-        else:
-            break
-    df['last_message_id'][idn.index(group_id)] = utils.get_message_id(messages[0])
-    df.to_csv('incremental.csv', index=False)
-    db.commit()
-    print(channel_item.title,'update commit success')
+        for message in messages:
+            if int(utils.get_message_id(message)) > mid:
+                speak=str(message.message).replace('\r', '').replace('\n', '').replace('\t', '')
+                sender=str(utils.get_display_name(message.sender))
+                #对字段长度进行截断，防止数据库报错
+                if len(speak)>500:
+                    speak=speak[:500]
+                if len(sender)>80:
+                    sender=sender[:80]
+                if len(speak)!=0 and speak!='None':
+                    cursor.execute("INSERT INTO rawData VALUES(null,%s,%s,%s,%s);",
+                                    (str(group_id), str(sender), str(str(message.date)[:19]),str(speak)))
+            else:
+                break
+        df['last_message_id'][idn.index(group_id)] = utils.get_message_id(messages[0])
+        df.to_csv('incremental.csv', index=False)
+        db.commit()
+        print(channel_item.title,'update commit success')
+    except ValueError as e:
+        print(e)
+    except Exception as e:
+        print(e)
+        
+    
