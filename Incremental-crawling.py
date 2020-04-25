@@ -107,6 +107,12 @@ for name in idn:
                                     (str(group_id), str(sender), str(str(message.date)[:19]),str(speak)))
             else:
                 break
+        #获取图片
+        photos = client.get_messages(group_id, None, filter=InputMessagesFilterPhotos)
+        for photo in photos:
+            filename = "./pic/" + str(group_id)+'-'+str(photo.id) + ".jpg"
+            client.download_media(photo, filename)
+        
         df['last_message_id'][idn.index(group_id)] = utils.get_message_id(messages[0])
         df.to_csv('incremental.csv', index=False)
         db.commit()
