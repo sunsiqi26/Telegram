@@ -119,7 +119,7 @@ for name in idn:
         print(channel_item.title,'update commit success')
     except ValueError as e:
         print(e)
-    except Exception as e:
+    except BaseException as e:
         print(e)
         
     
